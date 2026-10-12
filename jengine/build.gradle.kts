@@ -11,7 +11,11 @@ plugins {
 }
 
 group = "com.langbiantianya.jengine"
-version = "1.0.0"
+// JitPack builds a tag and then looks for the artifacts under the version that
+// tag names, so the version has to come from the build environment when there
+// is one: JitPack exports the tag (or the commit) it is building as VERSION. A
+// local build has no VERSION and keeps the development version.
+version = providers.environmentVariable("VERSION").orElse("1.0.0").get()
 
 kotlin {
     jvm {
@@ -65,6 +69,12 @@ android {
     compileSdk {
         version = release(37)
     }
+
+    // Pinned instead of left to the AGP default: this is the NDK the bridge is
+    // compiled with, and a machine that has to guess the version downloads
+    // about a gigabyte of it before it can start. 28.2.13676358 is r28c, what
+    // AGP 9 pairs with. jitpack.yml installs the same version up front.
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         minSdk = 23

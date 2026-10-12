@@ -26,17 +26,33 @@ else — a JAR needs a JVM, and a phone and a desktop are where those are.
 
 ## Install
 
+Releases are published through [JitPack](https://jitpack.io), which builds them
+from this repository's tags:
+
 ```kotlin
-// settings.gradle.kts / build.gradle.kts repositories need nothing unusual:
-// this is published from `mavenLocal` or whatever repository you push it to.
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io") { content { includeGroup("com.github.langbiantianya") } }
+    }
+}
+
+// the module that uses it
 dependencies {
-    implementation("com.langbiantianya.jengine:jengine:1.0.0")
+    implementation("com.github.langbiantianya:jengine:1.0.0")
 }
 ```
 
 A Kotlin Multiplatform project resolves the right variant for each target
 automatically: the AAR for an Android target, the JAR for a `jvm` one. Java-only
 Android projects can depend on the same coordinate.
+
+A checkout can also build the same artifacts for itself:
+`./gradlew :jengine:publishToMavenLocal` writes them into `~/.m2/repository`
+under `com.langbiantianya.jengine:jengine:1.0.0`, which is the coordinate to
+depend on if you are working from a local build rather than a release.
 
 ## Android
 
@@ -212,12 +228,30 @@ and packages it with the merged manifest.
 
 ## Publishing
 
+A release is a tag. JitPack checks the tag out, builds it from source on the
+first request for it, and serves the result from then on:
+
+```bash
+git tag 1.0.0
+git push origin 1.0.0
+```
+
+`jitpack.yml` describes the environment that build needs: which JDK runs Gradle,
+and the Android platform, NDK and CMake the native bridge is compiled with,
+installed before it starts. JitPack runs `./gradlew build publishToMavenLocal`
+and serves what that lands in `~/.m2/repository`, so the published version is
+the tag — `jengine/build.gradle.kts` reads it from the `VERSION` variable
+JitPack sets. Build status and log per version are on
+<https://jitpack.io/#langbiantianya/jengine>.
+
+The same thing locally:
+
 ```bash
 ./gradlew :jengine:publishToMavenLocal     # com.langbiantianya.jengine:jengine:1.0.0
 ```
 
-Add a `maven { url = ... }` publishing repository to `jengine/build.gradle.kts`
-for a real destination. `gradle.properties` sets
+That is the development coordinate, without JitPack's `com.github.` prefix; the
+two are the same artifacts built from the same commits. `gradle.properties` sets
 `android.builtInKotlin=false` and `android.newDsl=false` because AGP 9 refuses
 the classic library plugin next to Kotlin Multiplatform, and this module ships
 native code — the `.so` that loads the guest JVM — which only the classic
@@ -238,7 +272,7 @@ neither is suppressed because a real one should stay visible:
 ## Licence
 
 GPL-3.0, because this is a derived work: the Android half is the JVM machinery
-of [runJar](https://github.com/kxxnzstdsw/runJar), which is GPL-3.0, and the
+of [runJar](https://github.com/langbiantianya/runJar), which is GPL-3.0, and the
 guest-runtime recipe — the runtime's library path, the preload pass, the signal
 reset, the freetype rename — comes from
 [MojoLauncher](https://github.com/MojoLauncher) and PojavLauncher before it.

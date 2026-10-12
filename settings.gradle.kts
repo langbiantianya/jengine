@@ -25,6 +25,14 @@ dependencyResolutionManagement {
         maven("https://maven.aliyun.com/repository/central")
         google()
         mavenCentral()
+        // Where this library is published (see jitpack.yml), so a checkout can
+        // consume a released version of itself. Filtered to that one group: an
+        // unfiltered JitPack entry makes Gradle ask it about every dependency
+        // Central cannot serve, and JitPack answers a lookup by starting a
+        // build.
+        maven("https://jitpack.io") {
+            content { includeGroup("com.github.langbiantianya") }
+        }
     }
 }
 
