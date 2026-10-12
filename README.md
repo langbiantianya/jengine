@@ -1,5 +1,5 @@
 # jengine
-
+[![](https://jitpack.io/v/langbiantianya/jengine.svg)](https://jitpack.io/#langbiantianya/jengine)   
 A library that runs JAR files — on Android and on the desktop — from Kotlin
 Multiplatform code, and gives the caller the run's log, its exit status and the
 knobs to shape the JVM it runs in.
