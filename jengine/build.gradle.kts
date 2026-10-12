@@ -10,12 +10,17 @@ plugins {
     `maven-publish`
 }
 
-group = "com.langbiantianya.jengine"
-// JitPack builds a tag and then looks for the artifacts under the version that
-// tag names, so the version has to come from the build environment when there
-// is one: JitPack exports the tag (or the commit) it is building as VERSION. A
-// local build has no VERSION and keeps the development version.
-version = providers.environmentVariable("VERSION").orElse("1.0.0").get()
+// JitPack builds a tag with the coordinates it is going to serve that build
+// under, as Gradle properties (`-Pgroup=com.github.langbiantianya
+// -Pversion=<tag>`), and then looks the artifacts up by them: a build that
+// ignores them can install a jar that the version it was asked for cannot
+// find. So they win when they are passed, and a local build — which passes
+// neither — keeps the project's own group and version. The `VERSION` variable
+// is the other channel JitPack documents for a build script to read.
+group = providers.gradleProperty("group").getOrElse("com.langbiantianya.jengine")
+version = providers.gradleProperty("version")
+    .orElse(providers.environmentVariable("VERSION"))
+    .getOrElse("1.0.0")
 
 kotlin {
     jvm {
@@ -73,7 +78,7 @@ android {
     // Pinned instead of left to the AGP default: this is the NDK the bridge is
     // compiled with, and a machine that has to guess the version downloads
     // about a gigabyte of it before it can start. 28.2.13676358 is r28c, what
-    // AGP 9 pairs with. jitpack.yml installs the same version up front.
+    // AGP 9 pairs with.
     ndkVersion = "28.2.13676358"
 
     defaultConfig {

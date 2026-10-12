@@ -27,7 +27,8 @@ else — a JAR needs a JVM, and a phone and a desktop are where those are.
 ## Install
 
 Releases are published through [JitPack](https://jitpack.io), which builds them
-from this repository's tags:
+from this repository's tags. A consumer needs one coordinate — the module — and
+Gradle picks the variant that matches the target:
 
 ```kotlin
 // settings.gradle.kts
@@ -35,19 +36,30 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://jitpack.io") { content { includeGroup("com.github.langbiantianya") } }
+        maven("https://jitpack.io") {
+            content { includeGroupByRegex("com\\.github\\.langbiantianya(\\..*)?") }
+        }
     }
 }
 
 // the module that uses it
 dependencies {
-    implementation("com.github.langbiantianya:jengine:1.0.0")
+    implementation("com.github.langbiantianya.jengine:jengine:1.0.0")
 }
 ```
 
 A Kotlin Multiplatform project resolves the right variant for each target
 automatically: the AAR for an Android target, the JAR for a `jvm` one. Java-only
-Android projects can depend on the same coordinate.
+Android projects can depend on the same coordinate; a call site then has to pass
+what Kotlin's default arguments would have filled in, as in
+`AndroidEngineKt.jengine(context, new AndroidEngineConfig())`.
+
+Either target on its own can be named instead: `…:jengine-android:1.0.0` is the
+AAR and `…:jengine-jvm:1.0.0` the JAR. What *not* to use is the coordinate
+JitPack prints on its own page, `com.github.langbiantianya:jengine:1.0.0`: it is
+a module JitPack synthesises over every module in the build, so it depends on
+the JAR and the AAR at once and a consumer of one platform fails on the other
+platform's variants.
 
 A checkout can also build the same artifacts for itself:
 `./gradlew :jengine:publishToMavenLocal` writes them into `~/.m2/repository`
@@ -236,12 +248,13 @@ git tag 1.0.0
 git push origin 1.0.0
 ```
 
-`jitpack.yml` describes the environment that build needs: which JDK runs Gradle,
-and the Android platform, NDK and CMake the native bridge is compiled with,
-installed before it starts. JitPack runs `./gradlew build publishToMavenLocal`
-and serves what that lands in `~/.m2/repository`, so the published version is
-the tag — `jengine/build.gradle.kts` reads it from the `VERSION` variable
-JitPack sets. Build status and log per version are on
+`jitpack.yml` describes the environment that build needs — the JDK that runs
+Gradle; the Android platform, NDK and CMake the native bridge is compiled with
+are already in the image. JitPack runs `./gradlew build publishToMavenLocal`
+with the coordinates it will serve the build under, as `-Pgroup` and
+`-Pversion`, and then serves what those installed — which is why
+`jengine/build.gradle.kts` takes its group and version from those properties
+rather than from a constant. Build status and log per version are on
 <https://jitpack.io/#langbiantianya/jengine>.
 
 The same thing locally:

@@ -2,27 +2,30 @@
 # Copyright (C) 2026 lbty <langbiantianya@outlook.com>
 #
 # How JitPack builds this project. It reads this file from the commit it is
-# building — so it must be committed before the tag that is published — and
-# everything in it is about the two ways JitPack's image differs from a
-# developer machine: which JDK runs Gradle, and what the Android SDK contains.
+# building, so it has to be committed before the tag that is being published.
 #
-# JitPack runs `./gradlew build publishToMavenLocal` for a Gradle project and
-# then serves whatever landed in ~/.m2/repository, so nothing else is needed to
-# publish: the `maven-publish` plugin and its publications are already in
-# jengine/build.gradle.kts.
-
-# `gradle/gradle-daemon-jvm.properties` asks the Gradle daemon for JDK 25 (it
-# carries foojay URLs, so Gradle would otherwise download one mid-build). Asking
-# JitPack for the same JDK keeps the build to one JVM and one download.
+# JitPack builds a Gradle project by running
+#
+#   ./gradlew clean -Pgroup=com.github.langbiantianya -Pversion=<tag> \
+#       -xtest -xlint assemble publishToMavenLocal
+#
+# and then serves the artifacts it finds in ~/.m2/repository, so nothing else
+# is needed to publish: `maven-publish` and its publications are already in
+# jengine/build.gradle.kts, and the two properties are what put the artifacts
+# under the coordinates JitPack looks them up by afterwards -- which is why
+# that file honours them.
+#
+# `gradle/gradle-daemon-jvm.properties` asks the Gradle daemon for JDK 25, and
+# carries foojay URLs with it, so a build on an older JVM would first download
+# one. Asking JitPack for the same JDK avoids that: the daemon criteria are
+# satisfied by the JVM the build starts on.
 jdk:
   - openjdk25
 
-# The image's Android SDK is old, and this library compiles a native bridge for
-# four ABIs, so the three heavyweight components AGP would otherwise fetch one
-# failed build at a time are installed up front. `yes` answers the licence
-# prompt; `|| true` keeps a component the image already carries from failing the
-# step and taking the whole build with it. The NDK version is the one
-# `jengine/build.gradle.kts` pins and the CMake one is what its
-# `externalNativeBuild` block names.
-before_install:
-  - yes | sdkmanager --install "platforms;android-37" "ndk;28.2.13676358" "cmake;3.22.1" || true
+# Nothing else has to be set up here. The image's Android SDK already carries
+# what this module names -- a build log shows the native step using
+# /opt/android-sdk-linux/ndk/28.2.13676358, the version jengine/build.gradle.kts
+# pins, with a system CMake for the rest. Installing packages in `before_install`
+# is not an option anyway: the `sdkmanager` in the image is the SDK-tools one,
+# which needs the javax.xml.bind module the JDK has not shipped since 11, so it
+# dies with ClassNotFoundException on the JDK 25 this build runs on.

@@ -31,7 +31,7 @@ dependencyResolutionManagement {
         // Central cannot serve, and JitPack answers a lookup by starting a
         // build.
         maven("https://jitpack.io") {
-            content { includeGroup("com.github.langbiantianya") }
+            content { includeGroupByRegex("com\\.github\\.langbiantianya(\\..*)?") }
         }
     }
 }
