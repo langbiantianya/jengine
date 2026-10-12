@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-License-Identifier: GPL-3.0-only
+  Copyright (C) 2026 lbty <langbiantianya@outlook.com>
+-->
+
+<!--
+  What the library contributes to a consuming app's manifest.
+
+  The engine downloads the runtime it runs a JAR on, so the app's UID needs
+  INTERNET; it hosts the guest JVM in a foreground service, so that service and
+  its type are declared here rather than in every app that uses the engine.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <application
+        android:allowNativeHeapPointerTagging="false">
+        <!--
+          The guest JVM lives in a process of its own: a JAR that ends its VM,
+          trips a JVM assertion or corrupts its heap then takes down only this
+          process, and a 64-bit guest heap needs a 64-bit host process, which
+          the app's UI process may not be.
+
+          `specialUse` is the honest type for "the app is running a Java program
+          the user asked for", and the property below is what the platform asks
+          an app to say about it. A JAR that serves requests keeps serving
+          because this service is in the foreground: Android freezes a process
+          that is merely backgrounded, and its listening sockets would stay open
+          while nothing accepted on them.
+        -->
+        <service
+            android:name="com.langbiantianya.jengine.internal.GuestJvmService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":jengine">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Runs a user-supplied Java application, which may serve network requests." />
+        </service>
+    </application>
+
+</manifest>

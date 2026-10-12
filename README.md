@@ -248,4 +248,3 @@ licences: OpenJDK (GPLv2 with the Classpath Exception), fetched at install time.
 `GPL-3.0-only` is the SPDX identifier at the top of every source file, and the
 one the published POM declares. The third-party code this library and its build
 depend on, with the licence of each piece, is listed in `THIRD-PARTY.md`.
-# jengine
