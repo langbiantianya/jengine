@@ -195,10 +195,10 @@ disk is self-describing.
 
 ## Runtimes this library fetches
 
-| Where | Ids | Source |
-|---|---|---|
-| Android | `jre17`, `jre21`, `jre25` | `MojoLauncher/android-openjdk-build-17-25` (rolling release), as `jre<major>-pojav.zip`: a `universal.tar.xz` layer plus one `bin-<abi>.tar.xz` per ABI, unpacked on top of each other |
-| Desktop | `jre<feature>` per the Adoptium API | Temurin JREs, `.tar.gz` or `.zip` for the host OS and architecture |
+| Where | Ids | Source                                                                                                                                                                                                                                              |
+|---|---|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Android | `jre17`, `jre21`, `jre25` | [MojoLauncher/android-openjdk-build-17-25](https://github.com/MojoLauncher/android-openjdk-build-17-25) (rolling release), as `jre<major>-pojav.zip`: a `universal.tar.xz` layer plus one `bin-<abi>.tar.xz` per ABI, unpacked on top of each other |
+| Desktop | `jre<feature>` per the Adoptium API | [Temurin](https://adoptium.net) JREs, `.tar.gz` or `.zip` for the host OS and architecture                                                                                                                                                                              |
 
 The runtime a JAR needs is a class file version question: ≤ 61 for Java 17,
 ≤ 65 for Java 21, ≤ 69 for Java 25. On Android the releases published for the
